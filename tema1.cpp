@@ -148,8 +148,6 @@ void *reduce(void *arg) {
 
     list.reserve(size);
 
-    printf("R%d, size: %d\n", args.ID, size);
-
     for (int i = 0; i < args.M; i++) {
         list.insert(list.end(), args.mapValues[i].at(args.ID).begin(), args.mapValues[i].at(args.ID).end());
     }
