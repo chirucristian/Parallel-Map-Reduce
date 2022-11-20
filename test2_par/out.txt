@@ -1,0 +1,4 @@
+R5, size: 2
+R2, size: 32
+R3, size: 2
+R4, size: 5

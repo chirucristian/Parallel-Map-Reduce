@@ -3,6 +3,8 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <queue>
+#include <unordered_set>
+#include <cmath>
 
 using namespace std;
 
@@ -38,33 +40,46 @@ void readInputFile(string inputFileName, int &num, queue<string> &files) {
     inputFile.close();
 }
 
-int powInt(int n, int exp) {
-    int num = n;
-    for (int i = 2; i <= exp; i++) {
-        num = num * n;
-    }
+bool checkNumber(long int n, long int power) {
+    long int start = 2;
+    long int end = ceil(sqrt(n));
+    long int mid, num;
 
-    return num;
+    while (start <= end)
+    {
+        mid = (start + end) / 2;
+        num = pow(mid, power);
+        if (n == num)
+            return true;
+
+        else if (n > num) {
+            start = mid + 1;
+        }
+        else {
+            end = mid - 1;
+        }
+    }
+    
+    return false;
 }
 
 void getPerfectPowers(vector<int> &exponents, int n, int R) {
+
+    if (n <= 0) {
+        return;
+    }
     if (n == 1) {
         for (int i = 2; i <= R + 1; i++) {
             exponents.push_back(i);
         }
-
         return;
     }
 
     for (int i = 2; i <= R + 1; i++) {
-        for (int j = 2; j <= n; j++) {
-            int power = powInt(j, i);
-            if (power == n) {
-                exponents.push_back(i);
-            }
-            else if (power > n) {
-                break;
-            }
+        if (checkNumber(n, i)) {
+            exponents.push_back(i);
+        }
+        else if (i == 5) {
         }
     }
 }
@@ -107,14 +122,6 @@ void *map(void *arg) {
             }
 
             inputFile.close();
-
-            // printf("M%d got %s\n", args.ID, fileName.c_str());
-
-            //  if(fileName == "in1.txt") {
-            //     for (unsigned int i = 2; i <= R + 2; i++) {
-            //         args.mapValue->at(exponents[i]).push_back(num);
-            //     }
-            // }
         }
     }
 
@@ -130,8 +137,31 @@ void *map(void *arg) {
 void *reduce(void *arg) {
     argumentR args = (*(argumentR *) arg);
 
-    
+    while (!(*args.mappingDone)) {}
 
+    vector<int> list;
+    
+    unsigned int size = 0;
+    for (int i = 0; i < args.M; i++) {
+        size += args.mapValues[i].at(args.ID).size();
+    }
+
+    list.reserve(size);
+
+    printf("R%d, size: %d\n", args.ID, size);
+
+    for (int i = 0; i < args.M; i++) {
+        list.insert(list.end(), args.mapValues[i].at(args.ID).begin(), args.mapValues[i].at(args.ID).end());
+    }
+    unsigned int uniqueCount = unordered_set<int>(list.begin(), list.end()).size();
+
+    string outFileName = "out" + to_string(args.ID) + ".txt";
+
+    ofstream outputFile(outFileName);
+
+    outputFile << uniqueCount;
+
+    outputFile.close();
     return NULL;
 }
 
@@ -144,13 +174,6 @@ int main(int argc, char** argv) {
     queue<string> fileNames;
     readInputFile(inputFileName, fileNumber, fileNames);
     
-    // cout << fileNumber << endl;
-
-    // for (int i = 0; i < fileNumber; i++) {
-    //     cout << fileNames.front() << endl;
-    //     fileNames.pop();
-    // }
-
     pthread_t threads[M + R];
     argumentM argumentsM[M];
     argumentR argumentsR[R];
@@ -164,6 +187,7 @@ int main(int argc, char** argv) {
 
     // Observatie: Am pornit thread-urile unele dupa altele (ca in cerinta) dar in for-uri diferite
     for (int i = 0; i < M; i++) {
+        mapValues[i].reserve(R+2);
         argumentsM[i].ID = i;
         argumentsM[i].R = R;
         argumentsM[i].mutex = &mutexMap;
@@ -172,7 +196,6 @@ int main(int argc, char** argv) {
         argumentsM[i].mapValue = &mapValues[i];
         argumentsM[i].mappingDone = &mappingDone;
         pthread_create(&threads[i], NULL, map, &argumentsM[i]);
-        // cout << "Created thread " << i << endl;
     }
 
     for (int i = 0; i < R; i++) {
@@ -182,30 +205,11 @@ int main(int argc, char** argv) {
         argumentsR[i].mappingDone = &mappingDone;
         argumentsR[i].mapValues = mapValues;
         pthread_create(&threads[i + M], NULL, reduce, &argumentsR[i]);
-        // cout << "Created thread " << i + M << endl;
     }
 
     for (int i = 0; i < M + R; i++) {
 		pthread_join(threads[i], NULL);
 	}
-
-    // for (int i = 0; i < M; i++) {
-    //     cout << "M" << i << ": ";
-
-    //     for (int j = 2; j < R + 2; j++) {
-    //         unsigned int size = mapValues[i].at(j).size();
-    //         cout << "{";
-    //         for (unsigned int k = 0; k < size; k++) {
-    //             cout << mapValues[i].at(j).at(k) << " ";
-    //         }
-    //         cout << "} ";
-    //     }
-
-    //     cout << endl;
-    // }
-
-    // unsigned int microsecond = 1000000;
-    // usleep(3 * microsecond); //sleeps for 3 second
 
     pthread_mutex_destroy(&mutexMap);
     pthread_barrier_destroy(&barrierMap);
