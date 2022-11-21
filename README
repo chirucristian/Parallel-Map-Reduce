@@ -1,0 +1,45 @@
+Programul preia argumentele (numarul de thread-uri de tip Mapper, numarul
+de thread-uri de tip Reducer si fisierul de intrare) si le retine in variabilele
+M, R si inputFileName. Apeleaza functia readInputFile care citeste din fisierul de intrare 
+numele fisierelor ce trebuiesc procesate si le pune in coada files.
+
+Urmatorul pas este crearea tuturor thread-urilor (Obs: Am pornit thread-urile in doua for-uri,
+unul pentru cele de tip Mapper si unul pentru cele de tip Reducer. Lucrul acesta a fost mentionat
+ca fiind ok pe forum - https://curs.upb.ro/2022/mod/forum/discuss.php?d=1605).
+
+Pentru a putea trimite mai multi parametrii functilor map si reduce am definit structurile
+argumentM si argumentR, atunci cand cream thread-urile trimitand ca parametru un pointer
+la o astfel de structura.
+
+Listele obtinute in urma operatiei de Map se stocheaza in array-ul mappedValues care retine
+listele partiale determinate de fiecare Mapper.
+
+In cadrul functiei map preluam argumentele in structura args de tip argumentM si initializam
+lista cu R + 2 vectori (deoarece dorim ca pozitile din lista sa corespunda fiecarui exponent adaugam
+2 vectori goli pe primele 2 pozitii - Ex: pe pozitia 2 se va afla vectorul care retine numerele puteri
+perfecte cu exponent 2). Pentru a asigura o distributie cat mai buna a documentelor fiecare thread
+verifica daca in coada se mai afla documente care trebuie procesate iar in caz afirmativ va lua un
+document din aceasta pentru procesare (am folosit un mutex pentru a asigura faptul ca doar un thread efectueaza
+operatii pe coada la un moment dat), repetand bucla pana cand in coada nu mai exista documente.
+
+Pentru a procesa un document in functia map se realizeaza urmatoarele: se citeste fiecare numar din acesta iar
+in cadrul functiei getPerfectPowers se verifica daca acesta este putere perfecta pentru exponentii
+de la 2 la R + 1 iar in caz afirmativ se salveaza exponentii pentru care este putere perfecta in vectorul exponents.
+Pentru a verifica daca un numar este putere perfecta pentru un exponent am folosit cautarea binara in
+functia checkNumber, aceasta returnand true in caz afirmativ sau false in caz negativ.
+
+In momentul in care am obtinut lista de exponenti (de la 2 la R + 1) pentru care numarul este putere perfecta
+il adaugam in lista partiala corespunzatoare fiecarui exponent.
+
+La finalul functiei map am introdus o bariera cu count M care se deschide cand s-au procesat toate documentele
+iar dupa deschiderea acesteia thread-ul Mapper cu ID-ul 0 (care exista mereu) va seta variabila mappingDone la true.
+
+In cadrul functiei de reduce preluam argumentele si asteptam ca mappingDone sa devina true pentru a incepe
+operatia de Reduce. In cadrul acesteia combinam toate listele partiale pentru exponentul de care se ocupa thread-ul
+(care are aceasi valoare ca ID-ul sau) in vectorul list (in prealabil rezervand spatiul necesar in acesta pentru a
+evita redimensionarea sa) si numaram valorile unice creand un unordered_set (deoarece nu retine elemente duplicate)
+cu elementele din acesta, numarul de elemente unice fiind dimensiunea acestuia. In final, scriem numarul de valori
+unice in fisierul out corespunzator exponentului de care se ocupa thread-ul.
+
+In functia main facem join la toate thread-urile (atat cele de tip Mapper cat si cele de tip Reducer) si distrugem
+mutex-ul si bariera folosite in functia de map.

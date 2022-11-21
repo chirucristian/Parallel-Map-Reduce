@@ -243,8 +243,8 @@ int main(int argc, char** argv) {
 
     // facem join la toate thread-urile
     for (int i = 0; i < M + R; i++) {
-		pthread_join(threads[i], NULL);
-	}
+        pthread_join(threads[i], NULL);
+    }
 
     // distrugem mutex-ul si bariera
     pthread_mutex_destroy(&mutexMap);
