@@ -38,7 +38,7 @@ In cadrul functiei de reduce preluam argumentele in structura args de tip argume
 operatia de Reduce. In cadrul acesteia combinam toate listele partiale pentru exponentul de care se ocupa thread-ul
 (care are aceasi valoare cu ID-ul sau) in vectorul list (in prealabil rezervand spatiul necesar in acesta pentru a
 evita redimensionarea sa) si numaram valorile unice creand un unordered_set (deoarece nu retine elemente duplicate)
-cu elementele din acesta, numarul de elemente unice fiind dimensiunea acestuia. In final, scriem numarul de valori
+cu elementele din acesta, numarul de elemente unice fiind dimensiunea acestuia. In final, scriem numarul de elemente
 unice in fisierul out corespunzator exponentului de care se ocupa thread-ul.
 
 In functia main facem join la toate thread-urile (atat cele de tip Mapper cat si cele de tip Reducer) si distrugem
