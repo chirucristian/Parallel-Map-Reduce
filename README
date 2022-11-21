@@ -34,9 +34,9 @@ il adaugam in lista partiala corespunzatoare fiecarui exponent.
 La finalul functiei map am introdus o bariera cu count M care se deschide cand s-au procesat toate documentele
 iar dupa deschiderea acesteia thread-ul Mapper cu ID-ul 0 (care exista mereu) va seta variabila mappingDone la true.
 
-In cadrul functiei de reduce preluam argumentele si asteptam ca mappingDone sa devina true pentru a incepe
+In cadrul functiei de reduce preluam argumentele in structura args de tip argumentR si asteptam ca mappingDone sa devina true pentru a incepe
 operatia de Reduce. In cadrul acesteia combinam toate listele partiale pentru exponentul de care se ocupa thread-ul
-(care are aceasi valoare ca ID-ul sau) in vectorul list (in prealabil rezervand spatiul necesar in acesta pentru a
+(care are aceasi valoare cu ID-ul sau) in vectorul list (in prealabil rezervand spatiul necesar in acesta pentru a
 evita redimensionarea sa) si numaram valorile unice creand un unordered_set (deoarece nu retine elemente duplicate)
 cu elementele din acesta, numarul de elemente unice fiind dimensiunea acestuia. In final, scriem numarul de valori
 unice in fisierul out corespunzator exponentului de care se ocupa thread-ul.
