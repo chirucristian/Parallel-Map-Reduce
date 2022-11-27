@@ -1,5 +1,5 @@
 build:
-	g++ tema1.cpp -o tema1 -lpthread -Wall
+	g++ MapReduce.cpp -o MapReduce -lpthread -Wall
 
 clean:
-	rm -f tema1
+	rm -f MapReduce
